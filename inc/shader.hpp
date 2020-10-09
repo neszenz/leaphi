@@ -12,11 +12,19 @@ class Shader {
 
         void use() const;
 
-        void uniformMat4(const std::string& name, const glm::mat4& value);
+        void uniform(const std::string& name, float value);
+        void uniform(const std::string& name, const glm::vec2& value);
+        void uniform(const std::string& name, const glm::vec3& value);
+        void uniform(const std::string& name, const glm::vec4& value);
+        void uniform(const std::string& name, int value);
+        void uniform(const std::string& name, const glm::ivec2& value);
+        void uniform(const std::string& name, const glm::ivec3& value);
+        void uniform(const std::string& name, const glm::ivec4& value);
+        void uniform(const std::string& name, const glm::mat4& value);
     private:
         unsigned m_program_id;
         std::string m_program_name;
         std::map<std::string, unsigned> m_uniform_location_cache;
 
-        unsigned get_uniform_location(const std::string& name);
+        unsigned uniform_location(const std::string& name);
 };

@@ -87,15 +87,55 @@ void Shader::use() const {
     GL(glUseProgram(m_program_id));
 }
 
-void Shader::uniformMat4(const std::string& name, const glm::mat4& value) {
+void Shader::uniform(const std::string& name, float value) {
     this->use();
-    unsigned location = this->get_uniform_location(name);
+    unsigned location = this->uniform_location(name);
+    GL(glUniform1f(location, value));
+}
+void Shader::uniform(const std::string& name, const glm::vec2& value) {
+    this->use();
+    unsigned location = this->uniform_location(name);
+    GL(glUniform2f(location, value.x, value.y));
+}
+void Shader::uniform(const std::string& name, const glm::vec3& value) {
+    this->use();
+    unsigned location = this->uniform_location(name);
+    GL(glUniform3f(location, value.x, value.y, value.z));
+}
+void Shader::uniform(const std::string& name, const glm::vec4& value) {
+    this->use();
+    unsigned location = this->uniform_location(name);
+    GL(glUniform4f(location, value.x, value.y, value.z, value.w));
+}
+void Shader::uniform(const std::string& name, int value) {
+    this->use();
+    unsigned location = this->uniform_location(name);
+    GL(glUniform1i(location, value));
+}
+void Shader::uniform(const std::string& name, const glm::ivec2& value) {
+    this->use();
+    unsigned location = this->uniform_location(name);
+    GL(glUniform2i(location, value.x, value.y));
+}
+void Shader::uniform(const std::string& name, const glm::ivec3& value) {
+    this->use();
+    unsigned location = this->uniform_location(name);
+    GL(glUniform3i(location, value.x, value.y, value.z));
+}
+void Shader::uniform(const std::string& name, const glm::ivec4& value) {
+    this->use();
+    unsigned location = this->uniform_location(name);
+    GL(glUniform4i(location, value.x, value.y, value.z, value.w));
+}
+void Shader::uniform(const std::string& name, const glm::mat4& value) {
+    this->use();
+    unsigned location = this->uniform_location(name);
     GL(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value)));
 }
 
 // private interface +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
 
-unsigned Shader::get_uniform_location(const std::string& name) {
+unsigned Shader::uniform_location(const std::string& name) {
     unsigned location;
 
     // first check location cache
