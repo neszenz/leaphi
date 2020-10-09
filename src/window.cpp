@@ -31,7 +31,7 @@ void set_callbacks(GLFWwindow* win) {
     glfwSetScrollCallback(win, icu_scroll);
 }
 
-// Window class implementation - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
+// public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
 
 int Window::m_n_windows = 0;
 
