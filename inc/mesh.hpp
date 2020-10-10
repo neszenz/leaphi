@@ -8,7 +8,7 @@ class Mesh : public Object3D {
     public:
         Mesh(Geometry geometry, const Shader& shader);
 
-        Shader& shader();
+        const Shader& shader() const;
 
         void draw() const;
     private:

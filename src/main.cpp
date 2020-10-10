@@ -27,20 +27,26 @@ void reset_opengl() {
     GL(glClearColor(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
+void render(const Camera& cam, const Mesh& mesh) {
+    GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+    glm::mat4 p = cam.proj_matrix();
+    glm::mat4 v = cam.view_matrix();
+    glm::mat4 m = mesh.model_matrix();
+
+    mesh.shader().uniform("u_matrix", p*v*m);
+
+    mesh.draw();
+}
+
 int main(void) {
     reset_opengl();
-    Mesh triangle = build();
+    Mesh cube = build();
     global.camera.translate(glm::vec3(0.0f, 0.0f, 5.0f));
-    triangle.rotate(glm::radians(10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     while (!global.window.should_close()) {
         global.delta = global.window.update();
-        GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-        triangle.rotate(0.8f*global.delta, glm::vec3(0.8f, 0.6f, -0.4f));
-        glm::mat4 p = global.camera.proj_matrix();
-        glm::mat4 v = global.camera.view_matrix();
-        glm::mat4 m = triangle.model_matrix();
-        triangle.shader().uniform("u_matrix", p*v*m);
-        triangle.draw();
+        cube.rotate(0.8f*global.delta, glm::vec3(0.8f, 0.6f, -0.4f));
+        render(global.camera, cube);
         sleep(10);
     }
 

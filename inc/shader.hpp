@@ -19,21 +19,21 @@ class Shader {
 
         void use() const;
 
-        void uniform(const std::string& name, float value);
-        void uniform(const std::string& name, const glm::vec2& value);
-        void uniform(const std::string& name, const glm::vec3& value);
-        void uniform(const std::string& name, const glm::vec4& value);
-        void uniform(const std::string& name, int value);
-        void uniform(const std::string& name, const glm::ivec2& value);
-        void uniform(const std::string& name, const glm::ivec3& value);
-        void uniform(const std::string& name, const glm::ivec4& value);
-        void uniform(const std::string& name, const glm::mat4& value);
+        void uniform(const std::string& name, float value) const;
+        void uniform(const std::string& name, const glm::vec2& value) const;
+        void uniform(const std::string& name, const glm::vec3& value) const;
+        void uniform(const std::string& name, const glm::vec4& value) const;
+        void uniform(const std::string& name, int value) const;
+        void uniform(const std::string& name, const glm::ivec2& value) const;
+        void uniform(const std::string& name, const glm::ivec3& value) const;
+        void uniform(const std::string& name, const glm::ivec4& value) const;
+        void uniform(const std::string& name, const glm::mat4& value) const;
     private:
         std::string m_v_source;
         std::string m_f_source;
         unsigned m_program_id;
         std::string m_program_name;
-        std::map<std::string, unsigned> m_uniform_location_cache;
+        mutable std::map<std::string, unsigned> m_uniform_location_cache;
 
-        unsigned uniform_location(const std::string& name);
+        unsigned uniform_location(const std::string& name) const;
 };
