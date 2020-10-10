@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <iostream>
 #include <limits>
+#include <utility>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -13,28 +14,69 @@
 #define DEFAULT_AABB {INF, -INF, INF, -INF, INF, -INF}
 
 const std::vector<float> default_v_buffer = {
-    -0.8f, -0.8f, -0.1f,   1.0f, 0.0f, 0.0f,
-     0.8f, -0.8f, -0.1f,   0.0f, 1.0f, 0.0f,
-     0.0f,  0.8f, -0.1f,   0.0f, 0.0f, 1.0f
+    // color cube vertices
+    // position             // color
+    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, // 0 back  left  bottom
+     1.0f, -1.0f, -1.0f,    1.0f, 0.0f, 0.0f, // 1 back  right bottom
+     1.0f,  1.0f, -1.0f,    1.0f, 1.0f, 0.0f, // 2 back  right up
+    -1.0f,  1.0f, -1.0f,    0.0f, 1.0f, 0.0f, // 3 back  left  up
+    -1.0f, -1.0f,  1.0f,    0.0f, 0.0f, 1.0f, // 4 front left  bottom
+     1.0f, -1.0f,  1.0f,    1.0f, 0.0f, 1.0f, // 5 front right bottom
+     1.0f,  1.0f,  1.0f,    1.0f, 1.0f, 1.0f, // 6 front right up
+    -1.0f,  1.0f,  1.0f,    0.0f, 1.0f, 1.0f  // 7 front left  up
 };
 const std::vector<unsigned> default_e_buffer = {
-    0, 1, 2
+    // color cube indices
+    4, 5, 6, 4, 6, 7, // front
+    0, 2, 1, 0, 3, 2, // back
+    0, 4, 7, 0, 7, 3, // left
+    5, 1, 2, 6, 5, 2, // right
+    3, 7, 2, 2, 7, 6, // top
+    4, 0, 1, 4, 1, 5, // bottom
 };
 
 // public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
 
-Geometry::Geometry(const v_buffer_t& v_buffer, const e_buffer_t& e_buffer) {
-    m_bounding_box = this->compute_bounding_box(v_buffer);
-    m_gbi = this->create_geometry_buffer(v_buffer, e_buffer);
+Geometry::Geometry(const v_buffer_t& v_buffer, const e_buffer_t& e_buffer) : m_v_buffer(v_buffer), m_e_buffer(e_buffer) {
+    m_bounding_box = this->compute_bounding_box(m_v_buffer);
+    m_gbi = this->create_geometry_buffer(m_v_buffer, m_e_buffer);
 }
-
 Geometry::Geometry() : Geometry(default_v_buffer, default_e_buffer) {
 }
 
+Geometry::Geometry(const Geometry& other) : Geometry(other.m_v_buffer, other.m_e_buffer) {
+}
+Geometry& Geometry::operator=(Geometry other) {
+    swap(*this, other);
+    return *this;
+}
+Geometry::Geometry(Geometry&& other) {
+    m_bounding_box = std::move(other.m_bounding_box);
+    m_gbi = std::exchange(other.m_gbi, {0, 0, 0});
+    m_v_buffer = std::move(other.m_v_buffer);
+    m_e_buffer = std::move(other.m_e_buffer);
+}
+Geometry& Geometry::operator=(Geometry&& other) {
+    m_bounding_box = std::move(other.m_bounding_box);
+    m_gbi = std::exchange(other.m_gbi, {0, 0, 0});
+    m_v_buffer = std::move(other.m_v_buffer);
+    m_e_buffer = std::move(other.m_e_buffer);
+
+    return *this;
+}
 Geometry::~Geometry() {
     GL(glDeleteBuffers(1, &m_gbi.ebo));
     GL(glDeleteBuffers(1, &m_gbi.vbo));
     GL(glDeleteVertexArrays(1, &m_gbi.vao));
+}
+
+void swap(Geometry& first, Geometry& second) {
+    using std::swap; // enables ADL
+
+    swap(first.m_bounding_box, second.m_bounding_box);
+    swap(first.m_gbi, second.m_gbi);
+    swap(first.m_v_buffer, second.m_v_buffer);
+    swap(first.m_e_buffer, second.m_e_buffer);
 }
 
 void Geometry::draw() const {

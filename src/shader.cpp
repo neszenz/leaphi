@@ -1,5 +1,4 @@
 #include "shader.hpp"
-#include <iostream>
 
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -47,40 +46,82 @@ unsigned compile_shader(const char* source, unsigned type) {
     return shader_id;
 }
 
-// public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
-
-Shader::Shader(const char* name, const char* v_path, const char* f_path) : m_program_name(name) {
-    std::string v_source;
-    std::string f_source;
-
-    read_source(f_path, f_source);
-    read_source(v_path, v_source);
+unsigned create_program(const std::string& v_source, const std::string& f_source) {
+    unsigned program_id;
 
     unsigned v_shader_id = compile_shader(v_source.c_str(), GL_VERTEX_SHADER);
     unsigned f_shader_id = compile_shader(f_source.c_str(), GL_FRAGMENT_SHADER);
 
-    GL(m_program_id = glCreateProgram());
-    GL(glAttachShader(m_program_id, v_shader_id));
-    GL(glAttachShader(m_program_id, f_shader_id));
-    GL(glLinkProgram(m_program_id));
+    GL(program_id = glCreateProgram());
+    GL(glAttachShader(program_id, v_shader_id));
+    GL(glAttachShader(program_id, f_shader_id));
+    GL(glLinkProgram(program_id));
 
     int success;
     char info_log[512];
-    GL(glGetProgramiv(m_program_id, GL_LINK_STATUS, &success));
+    GL(glGetProgramiv(program_id, GL_LINK_STATUS, &success));
     if (!success) {
-        GL(glGetProgramInfoLog(m_program_id, 512, NULL, info_log));
+        GL(glGetProgramInfoLog(program_id, 512, NULL, info_log));
         std::stringstream ss;
-        ss << "\'"<< m_program_name << "\' shader linking error: \n" << info_log;
+        ss << "rhader linking error: \n" << info_log;
         throw std::runtime_error(ss.str());
     }
 
     GL(glDeleteShader(v_shader_id));
     GL(glDeleteShader(f_shader_id));
+
+    return program_id;
 }
 
+// public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
+
+Shader::Shader(const char* name, const char* v_path, const char* f_path) : m_program_name(name) {
+    read_source(v_path, m_v_source);
+    read_source(f_path, m_f_source);
+
+    m_program_id = create_program(m_v_source, m_f_source);
+}
+
+Shader::Shader(const Shader& other) {
+    m_v_source = other.m_v_source;
+    m_f_source = other.m_f_source;
+    m_program_id = create_program(m_v_source, m_f_source);
+    m_program_name = std::move(other.m_program_name);
+    // cache not copied, because I'm not sure it would work
+}
+Shader& Shader::operator=(Shader other) {
+    swap(*this, other);
+    return *this;
+}
+Shader::Shader(Shader&& other) {
+    m_v_source = std::move(other.m_v_source);
+    m_f_source = std::move(other.m_f_source);
+    m_program_id = std::exchange(other.m_program_id, 0);
+    m_program_name = std::move(other.m_program_name);
+    m_uniform_location_cache = std::move(other.m_uniform_location_cache);
+}
+Shader& Shader::operator=(Shader&& other) {
+    m_v_source = std::move(other.m_v_source);
+    m_f_source = std::move(other.m_f_source);
+    m_program_id = std::exchange(other.m_program_id, 0);
+    m_program_name = std::move(other.m_program_name);
+    m_uniform_location_cache = std::move(other.m_uniform_location_cache);
+
+    return *this;
+}
 Shader::~Shader() {
     GL(glUseProgram(0));
     GL(glDeleteProgram(m_program_id));
+}
+
+void swap(Shader& first, Shader& second) {
+    using std::swap; // enables ADL
+
+    swap(first.m_v_source, second.m_v_source);
+    swap(first.m_f_source, second.m_f_source);
+    swap(first.m_program_id, second.m_program_id);
+    swap(first.m_program_name, second.m_program_name);
+    swap(first.m_uniform_location_cache, second.m_uniform_location_cache);
 }
 
 void Shader::use() const {
