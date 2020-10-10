@@ -8,11 +8,11 @@
 
 global_t global;
 
-Mesh build() {
+Mesh build_cube() {
     Geometry g;
     Shader s("base", "res/shaders/basic.vert", "res/shaders/basic.frag");
-    Mesh triangle(g, s);
-    return triangle;
+    Mesh mesh(g, s);
+    return mesh;
 }
 
 void reset_opengl() {
@@ -41,12 +41,16 @@ void render(const Camera& cam, const Mesh& mesh) {
 
 int main(void) {
     reset_opengl();
-    Mesh cube = build();
+
+    Mesh cube = build_cube();
     global.camera.translate(glm::vec3(0.0f, 0.0f, 5.0f));
+
     while (!global.window.should_close()) {
         global.delta = global.window.update();
+
         cube.rotate(0.8f*global.delta, glm::vec3(0.8f, 0.6f, -0.4f));
         render(global.camera, cube);
+
         sleep(10);
     }
 

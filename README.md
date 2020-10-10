@@ -1,4 +1,4 @@
-# leaphi - leaf pattern generator based on the golden ratio phi
+# leaphi
 
 ...
 
