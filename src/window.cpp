@@ -17,14 +17,11 @@ void error_callback(int error, const char* description) {
     ss << "glfw_error_callback(): " << description;
     throw std::runtime_error(ss.str());
 }
-void window_size_callback(GLFWwindow* win, int w, int h) {
-    GL(glViewport(0, 0, w, h));
-}
 
 void set_callbacks(GLFWwindow* win) {
     glfwSetErrorCallback(error_callback);
-    glfwSetWindowSizeCallback(win, window_size_callback);
 
+    glfwSetWindowSizeCallback(win, icu_window_size);
     glfwSetKeyCallback(win, icu_key);
     glfwSetMouseButtonCallback(win, icu_mouse_button);
     glfwSetCursorPosCallback(win, icu_cursor_pos);
@@ -87,13 +84,13 @@ void Window::toggle_vsync() {
 bool Window::should_close() const {
     return glfwWindowShouldClose(m_window);
 }
-glm::ivec2 Window::get_size() const {
+glm::ivec2 Window::size() const {
     int w, h;
     glfwGetWindowSize(m_window, &w, &h);
     return glm::ivec2(w, h);
 }
-double Window::get_aspect() const {
-    glm::ivec2 size = this->get_size();
+double Window::aspect() const {
+    glm::ivec2 size = this->size();
     return double(size.x) / size.y;
 }
 

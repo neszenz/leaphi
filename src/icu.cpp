@@ -1,6 +1,12 @@
 #include "icu.hpp"
 
 #include "global.hpp"
+#include "util.hpp"
+
+void icu_window_size(GLFWwindow* win, int w, int h) {
+    GL(glViewport(0, 0, w, h));
+    global.camera.set_aspect(float(w)/h);
+}
 
 void icu_key(GLFWwindow* win, int key, int scode, int action, int mods) {
     if (action == GLFW_PRESS) {

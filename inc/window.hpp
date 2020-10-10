@@ -15,8 +15,8 @@ class Window {
         void toggle_vsync();
 
         bool should_close() const;
-        glm::ivec2 get_size() const;
-        double get_aspect() const;
+        glm::ivec2 size() const;
+        double aspect() const;
 
         double update();
     private:
