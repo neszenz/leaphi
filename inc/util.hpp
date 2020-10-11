@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <stdio.h>
 
 #define DEBUG
@@ -19,3 +21,5 @@
 #endif
 
 void sleep(int ms);
+
+glm::vec3 arc_ball_mapping(glm::vec2 screen_vec, glm::ivec2 screen_size);
