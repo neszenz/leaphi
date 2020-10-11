@@ -39,4 +39,5 @@ class Geometry {
         gbi_t create_geometry_buffer(const v_buffer_t& v_buffer,
                                      const e_buffer_t& e_buffer,
                                      GLenum type);
+        void destroy_geometry_buffer(Geometry::gbi_t gbi);
 };

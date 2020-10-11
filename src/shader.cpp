@@ -72,6 +72,11 @@ GLuint create_program(const std::string& v_source, const std::string& f_source) 
     return program_id;
 }
 
+void destroy_program(GLuint program_id) {
+    GL(glUseProgram(0));
+    GL(glDeleteProgram(program_id));
+}
+
 // public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
 
 Shader::Shader(const char* name, const char* v_path, const char* f_path) : m_program_name(name) {
@@ -100,17 +105,20 @@ Shader::Shader(Shader&& other) {
     m_uniform_location_cache = std::move(other.m_uniform_location_cache);
 }
 Shader& Shader::operator=(Shader&& other) {
-    m_v_source = std::move(other.m_v_source);
-    m_f_source = std::move(other.m_f_source);
-    m_program_id = std::exchange(other.m_program_id, 0);
-    m_program_name = std::move(other.m_program_name);
-    m_uniform_location_cache = std::move(other.m_uniform_location_cache);
+    if (this != other) {
+        destroy_program(m_program_id);
+
+        m_v_source = std::move(other.m_v_source);
+        m_f_source = std::move(other.m_f_source);
+        m_program_id = std::exchange(other.m_program_id, 0);
+        m_program_name = std::move(other.m_program_name);
+        m_uniform_location_cache = std::move(other.m_uniform_location_cache);
+    }
 
     return *this;
 }
 Shader::~Shader() {
-    GL(glUseProgram(0));
-    GL(glDeleteProgram(m_program_id));
+    destroy_program(m_program_id);
 }
 
 void swap(Shader& first, Shader& second) {

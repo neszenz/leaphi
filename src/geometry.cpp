@@ -50,17 +50,19 @@ Geometry::Geometry(Geometry&& other) {
     m_e_buffer = std::move(other.m_e_buffer);
 }
 Geometry& Geometry::operator=(Geometry&& other) {
-    m_bounding_box = std::move(other.m_bounding_box);
-    m_gbi = std::exchange(other.m_gbi, {0, 0, 0});
-    m_v_buffer = std::move(other.m_v_buffer);
-    m_e_buffer = std::move(other.m_e_buffer);
+    if (this != other) {
+        this->destroy_geometry_buffer(m_gbi);
+
+        m_bounding_box = std::move(other.m_bounding_box);
+        m_gbi = std::exchange(other.m_gbi, {0, 0, 0});
+        m_v_buffer = std::move(other.m_v_buffer);
+        m_e_buffer = std::move(other.m_e_buffer);
+    }
 
     return *this;
 }
 Geometry::~Geometry() {
-    GL(glDeleteBuffers(1, &m_gbi.ebo));
-    GL(glDeleteBuffers(1, &m_gbi.vbo));
-    GL(glDeleteVertexArrays(1, &m_gbi.vao));
+    this->delete_geometry_buffer(m_gbi);
 }
 
 void swap(Geometry& first, Geometry& second) {
@@ -140,4 +142,13 @@ Geometry::gbi_t Geometry::create_geometry_buffer(const v_buffer_t& v_buffer,
     GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
     return {vao, vbo, ebo, e_size, type};
+}
+void Geometry::destroy_geometry_buffer(Geometry::gbi_t gbi) {
+    GL(glBindVertexArray(0));
+    GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+
+    GL(glDeleteBuffers(1, &gbi.ebo));
+    GL(glDeleteBuffers(1, &gbi.vbo));
+    GL(glDeleteVertexArrays(1, &gbi.vao));
 }
