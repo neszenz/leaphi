@@ -1,6 +1,8 @@
 #pragma once
 
+#define GLM_SWIZZLE
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class Object3D {
     public:
@@ -8,9 +10,18 @@ class Object3D {
 
         glm::mat4 model_matrix() const;
 
-        void translate(glm::vec3 value);
+        glm::vec3 position() const;
+        glm::quat orientation() const;
 
-        void rotate(float value, glm::vec3 axis);
+        void translate(glm::vec3 value);
+        void translate_x(float value);
+        void translate_y(float value);
+        void translate_z(float value);
+
+        void rotate(float angle, glm::vec3 axis);
+
+        void orbit(float angle, glm::vec3 axis, glm::vec3 center);
     private:
-        glm::mat4 m_model;
+        glm::vec3 m_position;
+        glm::quat m_orientation;
 };
