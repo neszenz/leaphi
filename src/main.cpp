@@ -48,7 +48,6 @@ int main(void) {
     while (!global.window.should_close()) {
         global.delta = global.window.update();
 
-        cube.rotate(0.8f*global.delta, glm::vec3(0.8f, 0.6f, -0.4f));
         render(global.camera, cube);
 
         sleep(10);

@@ -15,6 +15,13 @@ struct global_t {
     Window window = Window(NAME, WIDTH, HEIGHT);
     Camera camera = Camera(FOV, ASPECT);
 
+    struct mouse_t {
+        bool LMB_down = false;
+        bool MMB_down = false;
+        bool RMB_down = false;
+        glm::ivec2 last_pos;
+    } mouse;
+
     double delta;
 };
 
