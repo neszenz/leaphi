@@ -5,46 +5,39 @@
 #include <limits>
 #include <utility>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
 #include "util.hpp"
 
 #define INF std::numeric_limits<float>::infinity()
 #define DEFAULT_AABB {INF, -INF, INF, -INF, INF, -INF}
 
-const std::vector<float> default_v_buffer = {
-    // color cube vertices
-    // position             // color
-    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, // 0 back  left  bottom
-     1.0f, -1.0f, -1.0f,    1.0f, 0.0f, 0.0f, // 1 back  right bottom
-     1.0f,  1.0f, -1.0f,    1.0f, 1.0f, 0.0f, // 2 back  right up
-    -1.0f,  1.0f, -1.0f,    0.0f, 1.0f, 0.0f, // 3 back  left  up
-    -1.0f, -1.0f,  1.0f,    0.0f, 0.0f, 1.0f, // 4 front left  bottom
-     1.0f, -1.0f,  1.0f,    1.0f, 0.0f, 1.0f, // 5 front right bottom
-     1.0f,  1.0f,  1.0f,    1.0f, 1.0f, 1.0f, // 6 front right up
-    -1.0f,  1.0f,  1.0f,    0.0f, 1.0f, 1.0f  // 7 front left  up
-};
-const std::vector<unsigned> default_e_buffer = {
-    // color cube indices
-    4, 5, 6, 4, 6, 7, // front
-    0, 2, 1, 0, 3, 2, // back
-    0, 4, 7, 0, 7, 3, // left
-    5, 1, 2, 6, 5, 2, // right
-    3, 7, 2, 2, 7, 6, // top
-    4, 0, 1, 4, 1, 5, // bottom
-};
+bool is_aligned(GLuint v_size, GLuint e_size, GLenum type) {
+    if (e_size == 0) {
+        return true;
+    }
+
+    switch (type) {
+        case GL_POINTS:
+            return (v_size >= 1);
+        case GL_LINE_LOOP:
+            return (v_size >= 1) && (e_size >= 2);
+        case GL_LINES:
+            return (v_size >= 2) && (e_size % 2 == 0);
+        case GL_TRIANGLES:
+            return (v_size >= 3) && (e_size % 3 == 0);
+        default:
+            throw std::runtime_error("GL_TYPE not supported");
+    }
+}
 
 // public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
 
-Geometry::Geometry(const v_buffer_t& v_buffer, const e_buffer_t& e_buffer) : m_v_buffer(v_buffer), m_e_buffer(e_buffer) {
+Geometry::Geometry(const v_buffer_t& v_buffer, const e_buffer_t& e_buffer,
+        GLenum type) : m_v_buffer(v_buffer), m_e_buffer(e_buffer) {
     m_bounding_box = this->compute_bounding_box(m_v_buffer);
-    m_gbi = this->create_geometry_buffer(m_v_buffer, m_e_buffer);
-}
-Geometry::Geometry() : Geometry(default_v_buffer, default_e_buffer) {
+    m_gbi = this->create_geometry_buffer(m_v_buffer, m_e_buffer, type);
 }
 
-Geometry::Geometry(const Geometry& other) : Geometry(other.m_v_buffer, other.m_e_buffer) {
+Geometry::Geometry(const Geometry& other) : Geometry(other.m_v_buffer, other.m_e_buffer, other.m_gbi.type) {
 }
 Geometry& Geometry::operator=(Geometry other) {
     swap(*this, other);
@@ -81,7 +74,7 @@ void swap(Geometry& first, Geometry& second) {
 
 void Geometry::draw() const {
     GL(glBindVertexArray(m_gbi.vao));
-    GL(glDrawElements(GL_TRIANGLES, m_gbi.n_elements, GL_UNSIGNED_INT, NULL));
+    GL(glDrawElements(m_gbi.type, m_gbi.n_elements, GL_UNSIGNED_INT, NULL));
     GL(glBindVertexArray(0));
 }
 
@@ -118,15 +111,17 @@ Geometry::aabb_t Geometry::compute_bounding_box(const v_buffer_t& v_buffer) {
 }
 
 Geometry::gbi_t Geometry::create_geometry_buffer(const v_buffer_t& v_buffer,
-                                                 const e_buffer_t& e_buffer) {
-    unsigned v_size = sizeof(v_buffer[0]) * v_buffer.size();
-    unsigned e_size = sizeof(e_buffer[0]) * e_buffer.size();
+                                                 const e_buffer_t& e_buffer,
+                                                 GLenum type) {
+    GLsizei v_size = sizeof(v_buffer[0]) * v_buffer.size();
+    GLsizei e_size = sizeof(e_buffer[0]) * e_buffer.size();
+    assert(is_aligned(v_size, e_size, type));
 
-    unsigned vao;
+    GLuint vao;
     GL(glGenVertexArrays(1, &vao));
     GL(glBindVertexArray(vao));
 
-    unsigned vbo;
+    GLuint vbo;
     GL(glGenBuffers(1, &vbo));
     GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
     GL(glBufferData(GL_ARRAY_BUFFER, v_size, &v_buffer[0], GL_STATIC_DRAW));
@@ -135,7 +130,7 @@ Geometry::gbi_t Geometry::create_geometry_buffer(const v_buffer_t& v_buffer,
     GL(glEnableVertexAttribArray(0));
     GL(glEnableVertexAttribArray(1));
 
-    unsigned ebo;
+    GLuint ebo;
     GL(glGenBuffers(1, &ebo));
     GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
     GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, e_size, &e_buffer[0], GL_STATIC_DRAW));
@@ -144,5 +139,5 @@ Geometry::gbi_t Geometry::create_geometry_buffer(const v_buffer_t& v_buffer,
     GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
     GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
-    return {vao, vbo, ebo, e_buffer.size()};
+    return {vao, vbo, ebo, e_size, type};
 }

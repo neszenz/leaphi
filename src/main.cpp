@@ -1,7 +1,7 @@
 #include "global.hpp"
 #include <GL/glew.h>
 
-#include "geometry.hpp"
+#include "color_cube.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
 #include "util.hpp"
@@ -9,7 +9,7 @@
 global_t global;
 
 Mesh build_cube() {
-    Geometry g;
+    Color_Cube g;
     Shader s("base", "res/shaders/basic.vert", "res/shaders/basic.frag");
     Mesh mesh(g, s);
     return mesh;
