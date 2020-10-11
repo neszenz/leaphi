@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 
 #include <map>
@@ -31,9 +32,9 @@ class Shader {
     private:
         std::string m_v_source;
         std::string m_f_source;
-        unsigned m_program_id;
+        GLuint m_program_id;
         std::string m_program_name;
-        mutable std::map<std::string, unsigned> m_uniform_location_cache;
+        mutable std::map<std::string, GLuint> m_uniform_location_cache;
 
-        unsigned uniform_location(const std::string& name) const;
+        GLint uniform_location(const std::string& name) const;
 };

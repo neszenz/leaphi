@@ -1,6 +1,6 @@
 #include "color_cube.hpp"
 
-const std::vector<float> cube_vertices = {
+const v_buffer_t cube_vertices = {
     // color cube vertices
     // position             // color
     -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, // 0 back  left  bottom
@@ -12,7 +12,7 @@ const std::vector<float> cube_vertices = {
      1.0f,  1.0f,  1.0f,    1.0f, 1.0f, 1.0f, // 6 front right up
     -1.0f,  1.0f,  1.0f,    0.0f, 1.0f, 1.0f  // 7 front left  up
 };
-const std::vector<unsigned> cube_elements = {
+const e_buffer_t cube_elements = {
     // color cube indices
     4, 5, 6, 4, 6, 7, // front
     0, 2, 1, 0, 3, 2, // back
