@@ -1,12 +1,11 @@
 #include "icu.hpp"
-#include <iostream>
 
 #include <glm/glm.hpp>
 
 #include "global.hpp"
 #include "util.hpp"
 
-void apply_orbit_momentum(double x_pos, double y_pos) {
+void apply_orbit_rotation(double x_pos, double y_pos) {
     glm::ivec2 win_size = global.window.size();
 
     glm::vec3 v0 = arc_ball_mapping(global.mouse.last_pos, win_size);
@@ -14,18 +13,29 @@ void apply_orbit_momentum(double x_pos, double y_pos) {
 
     double angle = acos(std::max(-1.0f, std::min(1.0f, glm::dot(v0, v1))));
     glm::vec3 axis = glm::cross(v1, v0);
-    global.camera.orbit(-angle, axis, glm::vec3(0.0f, 0.0f, 0.0f));
+    global.camera.orbit(-angle, axis, ORBIT_CENTER);
 }
 
-void applay_drag_offset(double x_pos, double y_pos) {
-    glm::ivec2 win_size = global.window.size();
-    double distance = glm::length(global.camera.position());
+// used for drag offset, so shortest dist to perpendicular plane is computed
+float compute_object_distance() {
+    glm::vec3 pc = ORBIT_CENTER - global.camera.position();
+    return glm::dot(global.camera.front(), pc);
+}
 
-    double x_move = distance * (x_pos - global.mouse.last_pos.x) / win_size.x;
-    double y_move = distance * (y_pos - global.mouse.last_pos.y) / win_size.y;
+// apply window space offset vector perspectively adjusted for object distance
+void apply_drag_offset(float x_pos, float y_pos) {
+    glm::vec2 win_size = global.window.size();
+    float dist = compute_object_distance();
 
-    global.camera.translate_x(x_move);
-    global.camera.translate_y(y_move);
+    glm::vec2 window_v0 = glm::vec2(global.mouse.last_pos) / win_size;
+    glm::vec2 window_v1 = glm::vec2(x_pos, y_pos) / win_size;
+
+    glm::vec3 world_v0 = global.camera.embed_in_world_space(window_v0, dist);
+    glm::vec3 world_v1 = global.camera.embed_in_world_space(window_v1, dist);
+
+    glm::vec3 world_offset = world_v0 - world_v1;
+
+    global.camera.translate(world_offset);
 }
 
 // callback functions =+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
@@ -65,27 +75,22 @@ void icu_mouse_button(GLFWwindow* win, int button, int action, int mods) {
     }
 
     if (action == GLFW_RELEASE) {
-        switch (button) {
-            case GLFW_MOUSE_BUTTON_LEFT:
-                global.mouse.LMB_down = false;
-                break;
-            case GLFW_MOUSE_BUTTON_MIDDLE:
-                global.mouse.MMB_down = false;
-                break;
-            case GLFW_MOUSE_BUTTON_RIGHT:
-                global.mouse.RMB_down = false;
-                break;
-        }
+        global.mouse.LMB_down = false;
+        global.mouse.MMB_down = false;
+        global.mouse.RMB_down = false;
     }
 }
 
 void icu_cursor_pos(GLFWwindow* win, double x_pos, double y_pos) {
     if (global.mouse.LMB_down) {
-        apply_orbit_momentum(x_pos, y_pos);
+        apply_orbit_rotation(x_pos, y_pos);
     }
 
     if (global.mouse.MMB_down) {
-        /* applay_drag_offset(x_pos, y_pos); */
+        apply_drag_offset(x_pos, y_pos);
+    }
+
+    if (global.mouse.RMB_down) {
     }
 
     global.mouse.last_pos = glm::ivec2(x_pos, y_pos);
