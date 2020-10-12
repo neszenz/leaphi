@@ -1,8 +1,20 @@
 #include "util.hpp"
 
 #include <assert.h>
-#include <thread>
 #include <chrono>
+#include <sstream>
+#include <thread>
+
+std::string to_string(const glm::vec2& value) {
+    std::stringstream ss;
+    ss << "vec3(" << value.x << ", " << value.y << ")";
+    return ss.str();
+}
+std::string to_string(const glm::vec3& value) {
+    std::stringstream ss;
+    ss << "vec3(" << value.x << ", " << value.y << ", " << value.z << ")";
+    return ss.str();
+}
 
 void sleep(int ms) {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));

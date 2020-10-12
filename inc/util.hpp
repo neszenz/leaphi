@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include <stdio.h>
+#include <string>
 
 #define DEBUG
 
@@ -19,6 +20,9 @@
 #else
 #define GL(x) x
 #endif
+
+std::string to_string(const glm::vec2& value);
+std::string to_string(const glm::vec3& value);
 
 void sleep(int ms);
 
