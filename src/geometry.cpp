@@ -50,7 +50,7 @@ Geometry::Geometry(Geometry&& other) {
     m_e_buffer = std::move(other.m_e_buffer);
 }
 Geometry& Geometry::operator=(Geometry&& other) {
-    if (this != other) {
+    if (this != &other) {
         this->destroy_geometry_buffer(m_gbi);
 
         m_bounding_box = std::move(other.m_bounding_box);
@@ -62,7 +62,7 @@ Geometry& Geometry::operator=(Geometry&& other) {
     return *this;
 }
 Geometry::~Geometry() {
-    this->delete_geometry_buffer(m_gbi);
+    this->destroy_geometry_buffer(m_gbi);
 }
 
 void swap(Geometry& first, Geometry& second) {

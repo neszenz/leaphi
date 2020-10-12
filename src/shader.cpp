@@ -105,7 +105,7 @@ Shader::Shader(Shader&& other) {
     m_uniform_location_cache = std::move(other.m_uniform_location_cache);
 }
 Shader& Shader::operator=(Shader&& other) {
-    if (this != other) {
+    if (this != &other) {
         destroy_program(m_program_id);
 
         m_v_source = std::move(other.m_v_source);
