@@ -9,7 +9,7 @@
 #define WIDTH 960
 #define HEIGHT 540
 #define ASPECT WIDTH / HEIGHT
-#define FOV 45.0f
+#define FOV 30.0f
 #define ORBIT_CENTER glm::vec3(0.0f, 0.0f, 0.0f)
 
 struct global_t {

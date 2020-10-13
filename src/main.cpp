@@ -43,7 +43,7 @@ int main(void) {
     reset_opengl();
 
     Mesh cube = build_cube();
-    global.camera.translate(glm::vec3(0.0f, 0.0f, 5.0f));
+    global.camera.translate(glm::vec3(0.0f, 0.0f, 10.0f));
 
     while (!global.window.should_close()) {
         global.delta = global.window.update();

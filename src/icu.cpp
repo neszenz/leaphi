@@ -1,4 +1,5 @@
 #include "icu.hpp"
+#include <iostream>
 
 #include <glm/glm.hpp>
 
@@ -97,4 +98,6 @@ void icu_cursor_pos(GLFWwindow* win, double x_pos, double y_pos) {
 }
 
 void icu_scroll(GLFWwindow* win, double x_offset, double y_offset) {
+    float speed = 4.0f;
+    global.camera.zoom(speed*-y_offset);
 }

@@ -43,6 +43,8 @@ class Camera : public Object3D {
         void move_up(float value);
         void move_down(float value);
 
+        void zoom(float value);
+
         void set_aspect(float aspect);
     private:
         float m_fov_y;

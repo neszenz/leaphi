@@ -3,6 +3,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+#define MIN_FOV 8.0f
+#define MAX_FOV 128.0f
+
 // public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
 
 Camera::Camera(float fov_y, float aspect, float near, float far) : m_fov_y(fov_y), m_aspect(aspect), m_near(near), m_far(far) {
@@ -75,6 +78,10 @@ void Camera::move_up(float value) {
 }
 void Camera::move_down(float value) {
     this->move_up(-value);
+}
+
+void Camera::zoom(float value) {
+    m_fov_y = std::max(MIN_FOV, std::min(MAX_FOV, m_fov_y+value));
 }
 
 void Camera::set_aspect(float aspect) {
