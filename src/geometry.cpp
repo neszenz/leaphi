@@ -73,6 +73,27 @@ void swap(Geometry& first, Geometry& second) {
     swap(first.m_v_buffer, second.m_v_buffer);
     swap(first.m_e_buffer, second.m_e_buffer);
 }
+Geometry operator+(const Geometry& first, const Geometry& second) {
+    if (first.m_gbi.type != second.m_gbi.type) {
+        throw std::runtime_error("Geometry::operator+() for different gbi types");
+    }
+
+    if (first.m_e_buffer.size() == 0) {
+        return Geometry(second);
+    }
+
+    const v_buffer_t& s_v_buffer = second.m_v_buffer;
+    v_buffer_t v_combined = first.m_v_buffer;
+    v_combined.insert(v_combined.end(), s_v_buffer.begin(), s_v_buffer.end());
+
+    e_buffer_t e_combined = first.m_e_buffer;
+    unsigned offset = first.m_v_buffer.size() / 6; // 3 float pos + 3 float color
+    for (unsigned e : second.m_e_buffer) {
+        e_combined.push_back(e + offset);
+    }
+
+    return Geometry(v_combined, e_combined, first.m_gbi.type);
+}
 
 void Geometry::draw() const {
     GL(glBindVertexArray(m_gbi.vao));
@@ -141,7 +162,7 @@ Geometry::gbi_t Geometry::create_geometry_buffer(const v_buffer_t& v_buffer,
     GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
     GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
-    return {vao, vbo, ebo, e_size, type};
+    return {vao, vbo, ebo, (GLsizei)e_buffer.size(), type};
 }
 void Geometry::destroy_geometry_buffer(Geometry::gbi_t gbi) {
     GL(glBindVertexArray(0));

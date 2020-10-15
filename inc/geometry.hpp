@@ -18,6 +18,7 @@ class Geometry {
         ~Geometry();
 
         friend void swap(Geometry& first, Geometry& second);
+        friend Geometry operator+(const Geometry& first, const Geometry& second);
 
         void draw() const;
     private:
