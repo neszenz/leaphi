@@ -31,12 +31,14 @@ glm::vec3 de_casteljau(const std::vector<glm::vec3>& points, float u) {
 }
 
 std::vector<glm::vec3> sample_bezier_curve(const std::vector<glm::vec3>& points,
-                                           unsigned n_samples) {
+                                           unsigned n_samples,
+                                           float p_limit) {
+    assert(p_limit >= 0.0f && p_limit <= 1.0f);
     n_samples = std::max(2u, n_samples);
     std::vector<glm::vec3> samples;
 
     for (unsigned i = 0; i < n_samples; ++i) {
-        float p = float(i) / (n_samples-1);
+        float p = p_limit * float(i) / (n_samples-1);
         samples.push_back(de_casteljau(points, p));
     }
 
@@ -78,11 +80,14 @@ void Bezier_Curve::add(glm::vec3 point) {
     m_points.push_back(point);
 }
 
-Mesh Bezier_Curve::sample_mesh(unsigned n_samples) const {
-    std::vector<glm::vec3> samples = sample_bezier_curve(m_points, n_samples);
+Mesh Bezier_Curve::sample_mesh_until(float p_limit, unsigned n_samples) const {
+    std::vector<glm::vec3> samples = sample_bezier_curve(m_points, n_samples, p_limit);
 
     v_buffer_t v_buffer = buffer_from_vector(samples, CURVE_COLOR);
     e_buffer_t e_buffer = generate_e_buffer(samples.size());
 
     return Mesh(Geometry(v_buffer, e_buffer, GL_LINES), CURVE_SHADER);
+}
+Mesh Bezier_Curve::sample_mesh(unsigned n_samples) const {
+    return this->sample_mesh_until(1.0f, n_samples);
 }
