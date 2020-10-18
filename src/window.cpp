@@ -93,6 +93,9 @@ double Window::aspect() const {
     glm::ivec2 size = this->size();
     return double(size.x) / size.y;
 }
+GLFWwindow* Window::get_GLFWwindow() const {
+    return m_window;
+}
 
 double Window::update() {
     this->make_context_current();

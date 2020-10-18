@@ -17,6 +17,7 @@ class Window {
         bool should_close() const;
         glm::ivec2 size() const;
         double aspect() const;
+        GLFWwindow* get_GLFWwindow() const;
 
         double update();
     private:

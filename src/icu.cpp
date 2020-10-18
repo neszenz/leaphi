@@ -1,6 +1,10 @@
 #include "icu.hpp"
 #include <iostream>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include <glm/glm.hpp>
 
 #include "global.hpp"
@@ -39,7 +43,7 @@ void apply_drag_offset(float x_pos, float y_pos) {
     global.camera.translate(world_offset);
 }
 
-// callback functions =+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
+// public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
 
 void icu_window_size(GLFWwindow* win, int w, int h) {
     GL(glViewport(0, 0, w, h));
@@ -84,7 +88,7 @@ void icu_mouse_button(GLFWwindow* win, int button, int action, int mods) {
 
 void icu_cursor_pos(GLFWwindow* win, double x_pos, double y_pos) {
     if (global.mouse.LMB_down) {
-        apply_orbit_rotation(x_pos, y_pos);
+        /* apply_orbit_rotation(x_pos, y_pos); */
     }
 
     if (global.mouse.MMB_down) {
@@ -100,4 +104,45 @@ void icu_cursor_pos(GLFWwindow* win, double x_pos, double y_pos) {
 void icu_scroll(GLFWwindow* win, double x_offset, double y_offset) {
     float speed = 4.0f;
     global.camera.zoom(speed*-y_offset);
+}
+
+void gui_window() {
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoResize;
+    window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+    ImGui::Begin("leaphi control", NULL, window_flags);
+
+    ImGui::Text("...");
+
+    ImGui::End();
+}
+void setup_gui() {
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(global.window.get_GLFWwindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 150");
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.GrabRounding = 0.0f;
+    style.WindowRounding = 0.0f;
+}
+void process_gui() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    gui_window();
+
+}
+void render_gui() {
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+void cleanup_gui() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }
