@@ -114,7 +114,9 @@ void gui_window() {
     window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
     ImGui::Begin("leaphi control", NULL, window_flags);
 
-    ImGui::Text("...");
+    ImGui::SliderFloat("generation factor", &(global.leaf.f), -1.0f, 1.0f);
+    ImGui::SliderInt("variance limiter", &(global.leaf.v), 2, 16);
+    ImGui::SliderFloat("growth stage", &(global.leaf.g), 0.0f, 1.0f);
 
     ImGui::End();
 }

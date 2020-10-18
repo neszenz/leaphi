@@ -16,6 +16,12 @@ struct global_t {
     Window window = Window(NAME, WIDTH, HEIGHT);
     Camera camera = Camera(FOV, ASPECT);
 
+    struct leaf_t {
+        float f = 0.0f; // generation factor [-1,1]
+        int v = 16; // variance limiter {2...}
+        float g = 1.0f; // growth stage [0,1]
+    } leaf;
+
     struct mouse_t {
         bool LMB_down = false;
         bool MMB_down = false;
