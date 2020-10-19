@@ -51,7 +51,7 @@ int main(void) {
         global.delta = global.window.update();
         process_gui();
 
-        Leaf leaf(global.leaf.f, global.leaf.v);
+        Leaf leaf(global.leaf.f);
         Mesh leaf_mesh = leaf.mesh(global.leaf.g);
         leaf_mesh.translate_x(-0.5f);
         render(global.camera, leaf_mesh);

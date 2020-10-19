@@ -3,69 +3,111 @@
 #include "bezier_curve.hpp"
 
 #define LEAF_ASPECT (2.0f / 3.0f)
+#define LEAF_VARIANCE 16 // random-generation variance limiter {2...}
 
-Mesh build_leaf(float f, float g, int v, float s) {
-    float x_size = g * s;
-    float y_size = x_size * g * LEAF_ASPECT;
-
-    float a = f * (M_PI / v) + (M_PI / 2);
+samples_t build_vein_samples(float f, float g, float size_factor) {
+    float a = f * (M_PI / LEAF_VARIANCE) + (M_PI / 2);
     float b = -a + M_PI;
-    float c = a;
+
+    float c0_x = 0.0f;
+    float c0_y = 0.0f;
+
+    float c1_radius = 0.4f * size_factor;
+    float c1_x = c1_radius * sin(a);
+    float c1_y = c1_radius * cos(a);
+
+    float c2_radius = 0.8f * size_factor;
+    float c2_x = c2_radius * sin(b);
+    float c2_y = c2_radius * cos(b);
+
+    float c3_x_radius = 0.2f * size_factor;
+    float c3_y_radius = 2.0f * c3_x_radius;
+    float c3_x = c3_x_radius * sin(a) + c2_x;
+    float c3_y = c3_y_radius * cos(a) + c2_y;
+
+    Bezier_Curve vein;
+    vein.add(glm::vec3(c0_x, c0_y, 0.0f));
+    vein.add(glm::vec3(c1_x, c1_y, 0.0f));
+    vein.add(glm::vec3(c2_x, c2_y, 0.0f));
+    vein.add(glm::vec3(c3_x, c3_y, 0.0f));
+
+    return vein.sample(g);
+}
+samples_t build_upper_margin_samples(float g, float x_size, float y_size) {
+    float c0_x = 0.0f;
+    float c0_y = 0.0f;
 
     float d_max = 0.5f * x_size;
     float d_min = 0.2f * x_size;
     float d = d_max - g * (d_max-d_min);
+    float c1_x = d;
+    float c1_y = y_size;
 
     float e_max = 1.0f * y_size;
     float e_min = 0.2f * y_size;
     float e = e_max - g * (e_max-e_min);
+    float c2_offset = 0.6f * x_size;
+    float c2_x = c2_offset;
+    float c2_y = e;
 
-    glm::vec2 begin = glm::vec2(0.0f, 0.0f);
-    glm::vec2 end = glm::vec2(x_size, 0.0f);
+    float c3_x = x_size;
+    float c3_y = 0.0f;
 
-    float s0_radius = 0.4 * s;
-    float s1_radius = 0.8 * s;
-    float s2_x_radius = 0.2 * s;
-    float s2_y_radius = 0.4 * s;
-    glm::vec2 s0 = glm::vec2(s0_radius*sin(a), s0_radius*cos(a));
-    glm::vec2 s1 = glm::vec2(s1_radius*sin(b), s1_radius*cos(b));
-    glm::vec2 s2 = glm::vec2(s2_x_radius*sin(c)+s1.x, s2_y_radius*cos(c)+s1.y);
+    Bezier_Curve upper_margin;
+    upper_margin.add(glm::vec3(c0_x, c0_y, 0.0f));
+    upper_margin.add(glm::vec3(c1_x, c1_y, 0.0f));
+    upper_margin.add(glm::vec3(c2_x, c2_y, 0.0f));
+    upper_margin.add(glm::vec3(c3_x, c3_y, 0.0f));
 
-    float c1_offset = 0.6f * x_size;
-    glm::vec2 uc0 = glm::vec2(d, y_size);
-    glm::vec2 uc1 = glm::vec2(c1_offset, e);
-
-    glm::vec2 lc0 = glm::vec2(d, -y_size);
-    glm::vec2 lc1 = glm::vec2(c1_offset, -e);
-
-    Bezier_Curve stem;
-    stem.add(glm::vec3(begin, 0.0f));
-    stem.add(glm::vec3(s0, 0.0f));
-    stem.add(glm::vec3(s1, 0.0f));
-    stem.add(glm::vec3(s2, 0.0f));
-
-    Bezier_Curve upper_contour;
-    upper_contour.add(glm::vec3(begin, 0.0f));
-    upper_contour.add(glm::vec3(uc0, 0.0f));
-    upper_contour.add(glm::vec3(uc1, 0.0f));
-    upper_contour.add(glm::vec3(end, 0.0f));
-
-    Bezier_Curve lower_contour;
-    lower_contour.add(glm::vec3(begin, 0.0f));
-    lower_contour.add(glm::vec3(lc0, 0.0f));
-    lower_contour.add(glm::vec3(lc1, 0.0f));
-    lower_contour.add(glm::vec3(end, 0.0f));
-
-    /* Mesh stem = stem.sample_mesh_until(-1.0f); */
-    Mesh vain = stem.sample_mesh_until(g);
-    Mesh margin = upper_contour.sample_mesh() + lower_contour.sample_mesh();
-
-    return vain + margin;
+    return upper_margin.sample();
 }
 
-Leaf::Leaf(float f, int variance_limiter, float size) : m_f(f), m_size(size), m_variance_limiter(variance_limiter) {
+void normalize_vein(samples_t& vein, float x_size) {
+    float vein_size = vein.back().x;
+    for (auto& s : vein) {
+        s.x = s.x/vein_size * x_size;
+    }
+}
+void invert_samples_x(samples_t& samples) {
+    for (auto& s : samples) {
+        s.x = -s.x;
+    }
+}
+void invert_samples_y(samples_t& samples) {
+    for (auto& s : samples) {
+        s.y = -s.y;
+    }
+}
+
+Mesh build_leaf(float f, float g, float size_factor) {
+    float x_size = g * size_factor;
+    float y_size = x_size * g * LEAF_ASPECT;
+
+    samples_t vein_samples = build_vein_samples(f, g, size_factor);
+    normalize_vein(vein_samples, x_size);
+
+    samples_t stem_samples = vein_samples; //TODO shorten
+    invert_samples_x(stem_samples);
+    invert_samples_y(stem_samples);
+
+    samples_t u_margin_samples = build_upper_margin_samples(g, x_size, y_size);
+    samples_t l_margin_samples = u_margin_samples;
+    invert_samples_y(l_margin_samples);
+    //TODO apply vein path offset
+
+    Mesh vein = Bezier_Curve::mesh_from_samples(vein_samples);
+    Mesh stem = Bezier_Curve::mesh_from_samples(stem_samples);
+    Mesh u_margin = Bezier_Curve::mesh_from_samples(u_margin_samples);
+    Mesh l_margin = Bezier_Curve::mesh_from_samples(l_margin_samples);
+
+    return stem + vein + u_margin + l_margin;
+}
+
+// public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
+
+Leaf::Leaf(float f, float size_factor) : m_f(f), m_size_factor(size_factor) {
 }
 
 Mesh Leaf::mesh(float growth_stage) const {
-    return build_leaf(m_f, growth_stage, m_variance_limiter, m_size);
+    return build_leaf(m_f, growth_stage, m_size_factor);
 }

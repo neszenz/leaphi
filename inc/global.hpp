@@ -18,7 +18,6 @@ struct global_t {
 
     struct leaf_t {
         float f = 0.0f; // generation factor [-1,1]
-        int v = 16; // variance limiter {2...}
         float g = 1.0f; // growth stage [0,1]
     } leaf;
 
