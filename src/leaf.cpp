@@ -4,6 +4,7 @@
 
 #define LEAF_ASPECT (2.0f / 3.0f)
 #define LEAF_VARIANCE 16 // random-generation variance limiter {2...}
+#define VEIN_STEM_RATIO (1.0f / 4.0f)
 
 samples_t build_vein_samples(float f, float g, float size_factor) {
     float a = f * (M_PI / LEAF_VARIANCE) + (M_PI / 2);
@@ -78,6 +79,13 @@ void invert_samples_y(samples_t& samples) {
         s.y = -s.y;
     }
 }
+void apply_vein_offset(const samples_t& vein, samples_t& margin) {
+    assert(vein.size() == margin.size());
+
+    for (unsigned i = 0; i < margin.size(); ++i) {
+        margin.at(i).y += vein.at(i).y;
+    }
+}
 
 Mesh build_leaf(float f, float g, float size_factor) {
     float x_size = g * size_factor;
@@ -86,21 +94,26 @@ Mesh build_leaf(float f, float g, float size_factor) {
     samples_t vein_samples = build_vein_samples(f, g, size_factor);
     normalize_vein(vein_samples, x_size);
 
-    samples_t stem_samples = vein_samples; //TODO shorten
+    unsigned offset = vein_samples.size() * VEIN_STEM_RATIO;
+    samples_t stem_samples(vein_samples.begin(), vein_samples.begin()+offset);
     invert_samples_x(stem_samples);
     invert_samples_y(stem_samples);
 
     samples_t u_margin_samples = build_upper_margin_samples(g, x_size, y_size);
     samples_t l_margin_samples = u_margin_samples;
     invert_samples_y(l_margin_samples);
-    //TODO apply vein path offset
+    apply_vein_offset(vein_samples, u_margin_samples);
+    apply_vein_offset(vein_samples, l_margin_samples);
 
     Mesh vein = Bezier_Curve::mesh_from_samples(vein_samples);
     Mesh stem = Bezier_Curve::mesh_from_samples(stem_samples);
     Mesh u_margin = Bezier_Curve::mesh_from_samples(u_margin_samples);
     Mesh l_margin = Bezier_Curve::mesh_from_samples(l_margin_samples);
 
-    return stem + vein + u_margin + l_margin;
+    Mesh leaf = stem + vein + u_margin + l_margin;
+    leaf.translate(-stem_samples.back());
+
+    return leaf;
 }
 
 // public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
