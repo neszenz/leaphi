@@ -1,10 +1,21 @@
 #include "leaf.hpp"
 
 #include "bezier_curve.hpp"
+#include "util.hpp"
 
 #define LEAF_ASPECT (2.0f / 3.0f)
 #define LEAF_VARIANCE 16 // random-generation variance limiter {2...}
 #define VEIN_STEM_RATIO (1.0f / 4.0f)
+
+#define VEIN_C1_RADIUS_FACTOR 0.4f
+#define VEIN_C2_RADIUS_FACTOR 0.8f
+#define VEIN_C3_X_RADIUS_FACTOR 0.2f
+#define VEIN_C3_Y_RADIUS_FACTOR (2.0f * VEIN_C3_X_RADIUS_FACTOR)
+#define D_MIN_FACTOR 0.1f
+#define D_MAX_FACTOR 0.5f
+#define E_MIN_FACTOR 0.15f
+#define E_MAX_FACTOR 1.0f
+#define MARGIN_C2_OFFSET_FACTOR 0.6f
 
 samples_t build_vein_samples(float f, float g, float size_factor) {
     float a = f * (M_PI / LEAF_VARIANCE) + (M_PI / 2);
@@ -13,16 +24,16 @@ samples_t build_vein_samples(float f, float g, float size_factor) {
     float c0_x = 0.0f;
     float c0_y = 0.0f;
 
-    float c1_radius = 0.4f * size_factor;
+    float c1_radius = VEIN_C1_RADIUS_FACTOR * size_factor;
     float c1_x = c1_radius * sin(a);
     float c1_y = c1_radius * cos(a);
 
-    float c2_radius = 0.8f * size_factor;
+    float c2_radius = VEIN_C1_RADIUS_FACTOR * size_factor;
     float c2_x = c2_radius * sin(b);
     float c2_y = c2_radius * cos(b);
 
-    float c3_x_radius = 0.2f * size_factor;
-    float c3_y_radius = 2.0f * c3_x_radius;
+    float c3_x_radius = VEIN_C3_X_RADIUS_FACTOR * size_factor;
+    float c3_y_radius = VEIN_C3_X_RADIUS_FACTOR * size_factor;
     float c3_x = c3_x_radius * sin(a) + c2_x;
     float c3_y = c3_y_radius * cos(a) + c2_y;
 
@@ -38,16 +49,16 @@ samples_t build_upper_margin_samples(float g, float x_size, float y_size) {
     float c0_x = 0.0f;
     float c0_y = 0.0f;
 
-    float d_max = 0.5f * x_size;
-    float d_min = 0.2f * x_size;
+    float d_max = D_MAX_FACTOR * x_size;
+    float d_min = D_MIN_FACTOR * x_size;
     float d = d_max - g * (d_max-d_min);
     float c1_x = d;
     float c1_y = y_size;
 
-    float e_max = 1.0f * y_size;
-    float e_min = 0.2f * y_size;
+    float e_max = E_MAX_FACTOR * y_size;
+    float e_min = E_MIN_FACTOR * y_size;
     float e = e_max - g * (e_max-e_min);
-    float c2_offset = 0.6f * x_size;
+    float c2_offset = MARGIN_C2_OFFSET_FACTOR * x_size;
     float c2_x = c2_offset;
     float c2_y = e;
 
@@ -120,7 +131,16 @@ Mesh build_leaf(float f, float g, float size_factor) {
 
 Leaf::Leaf(float f, float size_factor) : m_f(f), m_size_factor(size_factor) {
 }
+Leaf::Leaf() : m_f(noise_np(1.0f)),  m_size_factor(DEFAULT_LEAF_SIZE) {
+}
 
 Mesh Leaf::mesh(float growth_stage) const {
-    return build_leaf(m_f, growth_stage, m_size_factor);
+    float sf = m_size_factor;
+    float gs = growth_stage;
+    if (growth_stage > 1.0f) {
+        sf += gs - 1.0f;
+        gs = 1.0f;
+    }
+
+    return build_leaf(m_f, gs, sf);
 }
