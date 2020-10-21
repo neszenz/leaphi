@@ -42,3 +42,13 @@ glm::vec3 arc_ball_mapping(glm::vec2 screen_vec, glm::ivec2 screen_size) {
 
     return glm::vec3(x, y, z);
 }
+
+float noise_p(float range) {
+    return range * float(rand()) / float(RAND_MAX);
+}
+float noise_np(float range) {
+    return 2.0f * noise_p(range) - range;
+}
+bool noise_b() {
+    return (noise_p(1.0f) > 0.5f)? true : false;
+}
