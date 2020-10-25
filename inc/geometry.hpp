@@ -20,6 +20,8 @@ class Geometry {
         friend void swap(Geometry& first, Geometry& second);
         friend Geometry operator+(const Geometry& first, const Geometry& second);
 
+        v_buffer_t get_vertices() const;
+
         void draw() const;
     private:
         struct aabb_t { // axis-aligned bounding box

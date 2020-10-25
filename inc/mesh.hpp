@@ -12,6 +12,8 @@ class Mesh : public Object3D {
 
         const Shader& shader() const;
 
+        v_buffer_t get_vertices() const;
+
         void draw() const;
     private:
         Geometry m_geometry;

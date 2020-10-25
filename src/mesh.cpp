@@ -13,6 +13,10 @@ const Shader& Mesh::shader() const {
     return m_shader;
 }
 
+v_buffer_t Mesh::get_vertices() const {
+    return m_geometry.get_vertices();
+}
+
 void Mesh::draw() const {
     m_shader.use();
     m_geometry.draw();

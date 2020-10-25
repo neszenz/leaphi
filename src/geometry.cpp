@@ -95,6 +95,10 @@ Geometry operator+(const Geometry& first, const Geometry& second) {
     return Geometry(v_combined, e_combined, first.m_gbi.type);
 }
 
+v_buffer_t Geometry::get_vertices() const {
+    return m_v_buffer;
+}
+
 void Geometry::draw() const {
     GL(glBindVertexArray(m_gbi.vao));
     GL(glDrawElements(m_gbi.type, m_gbi.n_elements, GL_UNSIGNED_INT, NULL));
