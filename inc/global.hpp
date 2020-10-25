@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "camera.hpp"
 #include "window.hpp"
@@ -16,10 +17,12 @@ struct global_t {
     Window window = Window(NAME, WIDTH, HEIGHT);
     Camera camera = Camera(FOV, ASPECT);
 
-    struct leaf_t {
-        float f = 0.0f; // generation factor [-1,1]
-        float g = 1.0f; // growth stage [0,1]
-    } leaf;
+    double delta;
+
+    bool run_animation = false;
+    float time = 0.0f;
+    float growth_rate = 0.5f;
+    float spawn_rate = 1.0f;
 
     struct mouse_t {
         bool LMB_down = false;
@@ -27,8 +30,6 @@ struct global_t {
         bool RMB_down = false;
         glm::ivec2 last_pos;
     } mouse;
-
-    double delta;
 };
 
 extern global_t global;

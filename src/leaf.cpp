@@ -5,7 +5,7 @@
 
 #define LEAF_ASPECT (2.0f / 3.0f)
 #define LEAF_VARIANCE 16 // random-generation variance limiter {2...}
-#define VEIN_STEM_RATIO (1.0f / 4.0f)
+#define VEIN_STEM_RATIO (1.0f / 20.0f)
 
 #define VEIN_C1_RADIUS_FACTOR 0.4f
 #define VEIN_C2_RADIUS_FACTOR 0.8f
@@ -105,7 +105,7 @@ Mesh build_leaf(float f, float g, float size_factor) {
     samples_t vein_samples = build_vein_samples(f, g, size_factor);
     normalize_vein(vein_samples, x_size);
 
-    unsigned offset = vein_samples.size() * VEIN_STEM_RATIO;
+    unsigned offset = ceil(vein_samples.size() * VEIN_STEM_RATIO);
     samples_t stem_samples(vein_samples.begin(), vein_samples.begin()+offset);
     invert_samples_x(stem_samples);
     invert_samples_y(stem_samples);

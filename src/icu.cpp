@@ -56,6 +56,9 @@ void icu_key(GLFWwindow* win, int key, int scode, int action, int mods) {
             case GLFW_KEY_Q:
                 glfwSetWindowShouldClose(win, GLFW_TRUE);
                 break;
+            case GLFW_KEY_SPACE:
+                global.run_animation = (global.run_animation)? false : true;
+                break;
         };
     }
 }
@@ -114,8 +117,9 @@ void gui_window() {
     window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
     ImGui::Begin("leaphi control", NULL, window_flags);
 
-    ImGui::SliderFloat("generation factor", &(global.leaf.f), -1.0f, 1.0f);
-    ImGui::SliderFloat("growth stage", &(global.leaf.g), 0.0f, 1.0f);
+    ImGui::SliderFloat("growth time", &(global.time), 0.0f, 100.0f);
+    ImGui::SliderFloat("growth rate", &(global.growth_rate), 0.0f, 2.0f);
+    ImGui::SliderFloat("spawn timing", &(global.spawn_rate), 0.0f, 2.0f);
 
     ImGui::End();
 }
