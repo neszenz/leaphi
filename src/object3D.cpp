@@ -11,8 +11,11 @@ Object3D::Object3D() {
     m_orientation = glm::quat(glm::vec3(0.0f));
 }
 
+glm::mat4 Object3D::inverse_model_matrix() const {
+    return glm::translate(glm::mat4_cast(m_orientation), -m_position);
+}
 glm::mat4 Object3D::model_matrix() const {
-    return glm::affineInverse(glm::translate(glm::mat4_cast(m_orientation), -m_position));
+    return glm::affineInverse(this->inverse_model_matrix());
 }
 
 glm::vec3 Object3D::position() const {

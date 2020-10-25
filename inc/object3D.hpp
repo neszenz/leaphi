@@ -8,6 +8,7 @@ class Object3D {
     public:
         Object3D();
 
+        glm::mat4 inverse_model_matrix() const;
         glm::mat4 model_matrix() const;
 
         glm::vec3 position() const;

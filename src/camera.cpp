@@ -25,7 +25,7 @@ float Camera::far() const {
 }
 
 glm::mat4 Camera::view_matrix() const {
-    return glm::affineInverse(this->model_matrix());
+    return this->inverse_model_matrix();
 }
 glm::mat4 Camera::proj_matrix() const {
     return glm::perspective(glm::radians(m_fov_y), m_aspect, m_near, m_far);
