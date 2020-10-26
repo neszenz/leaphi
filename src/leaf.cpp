@@ -1,11 +1,14 @@
 #include "leaf.hpp"
 
+#include <assert.h>
+
 #include "bezier_curve.hpp"
+#include "triangle_wrapper.hpp"
 #include "util.hpp"
 
 #define LEAF_ASPECT (2.0f / 3.0f)
-#define LEAF_VARIANCE 16 // random-generation variance limiter {2...}
-#define VEIN_STEM_RATIO (1.0f / 20.0f)
+#define LEAF_VARIANCE 12 // random-generation variance limiter {2...}
+#define VEIN_STEM_RATIO (1.0f / (N_SAMPLES-1))
 
 #define VEIN_C1_RADIUS_FACTOR 0.4f
 #define VEIN_C2_RADIUS_FACTOR 0.8f
@@ -16,6 +19,17 @@
 #define E_MIN_FACTOR 0.15f
 #define E_MAX_FACTOR 1.0f
 #define MARGIN_C2_OFFSET_FACTOR 0.6f
+
+#define LEAF_COLOR glm::vec3(0.0f, 1.0f, 0.0f)
+#define LEAF_SHADER Shader("leaf", "res/shaders/basic.vert", \
+                                    "res/shaders/basic.frag")
+
+struct sampled_leaf_t {
+    samples_t stem;
+    samples_t vein;
+    samples_t u_margin;
+    samples_t l_margin;
+};
 
 samples_t build_vein_samples(float f, float g, float size_factor) {
     float a = f * (M_PI / LEAF_VARIANCE) + (M_PI / 2);
@@ -98,7 +112,12 @@ void apply_vein_offset(const samples_t& vein, samples_t& margin) {
     }
 }
 
-Mesh build_leaf(float f, float g, float size_factor) {
+sampled_leaf_t build_sampled_leaf(float f, float g, float size_factor) {
+    if (g > 1.0f) {
+        size_factor += g - 1.0f;
+        g = 1.0f;
+    }
+
     float x_size = g * size_factor;
     float y_size = x_size * g * LEAF_ASPECT;
 
@@ -116,31 +135,70 @@ Mesh build_leaf(float f, float g, float size_factor) {
     apply_vein_offset(vein_samples, u_margin_samples);
     apply_vein_offset(vein_samples, l_margin_samples);
 
-    Mesh vein = Bezier_Curve::mesh_from_samples(vein_samples);
-    Mesh stem = Bezier_Curve::mesh_from_samples(stem_samples);
-    Mesh u_margin = Bezier_Curve::mesh_from_samples(u_margin_samples);
-    Mesh l_margin = Bezier_Curve::mesh_from_samples(l_margin_samples);
+    return {stem_samples, vein_samples, u_margin_samples, l_margin_samples};
+}
+samples_t merge_margins(const samples_t& u_margin, const samples_t& l_margin) {
+    assert(all_close(u_margin.front(), l_margin.front()));
+    assert(all_close(u_margin.back(), l_margin.back()));
+
+    samples_t margin;
+
+    for (unsigned i = 0; i < u_margin.size()-1; ++i) {
+        margin.push_back(u_margin.at(i));
+    }
+    for (unsigned i = 0; i < l_margin.size()-1; ++i) {
+        unsigned last_i = l_margin.size() - 1;
+        margin.push_back(l_margin.at(last_i - i));
+    }
+
+    return margin;
+}
+
+Mesh build_empty_leaf() {
+    return Mesh(Geometry(v_buffer_t(), e_buffer_t()), LEAF_SHADER);
+}
+Mesh build_contour(const sampled_leaf_t& sampled_leaf) {
+    Mesh vein = Bezier_Curve::mesh_from_samples(sampled_leaf.vein);
+    Mesh stem = Bezier_Curve::mesh_from_samples(sampled_leaf.stem);
+    Mesh u_margin = Bezier_Curve::mesh_from_samples(sampled_leaf.u_margin);
+    Mesh l_margin = Bezier_Curve::mesh_from_samples(sampled_leaf.l_margin);
 
     Mesh leaf = stem + vein + u_margin + l_margin;
-    leaf.translate(-stem_samples.back());
+    leaf.translate(-sampled_leaf.stem.back());
 
     return leaf;
+}
+Mesh build_lamina(const sampled_leaf_t& sampled_leaf, const glm::vec3& color) {
+    samples_t u_margin_samples = sampled_leaf.u_margin;
+    samples_t l_margin_samples = sampled_leaf.l_margin;
+    samples_t margin_samples = merge_margins(u_margin_samples, l_margin_samples);
+
+    v_buffer_t vertices = buffer_from_samples(margin_samples, color);
+    e_buffer_t elements = triangulate_xy_plane(margin_samples);
+
+    return Mesh(Geometry(vertices, elements), LEAF_SHADER);
 }
 
 // public interface  +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ - +=+ +
 
-Leaf::Leaf(float f, float size_factor) : m_f(f), m_size_factor(size_factor) {
+Leaf::Leaf(float f, float size_factor) : m_f(f), m_size_factor(size_factor)  {
+    float r = noise_p(0.3f);
+    float g = 0.4f + noise_p(0.2f);
+    float b = noise_p(0.1f);
+    m_color = glm::vec3(r, g, b);
 }
-Leaf::Leaf() : m_f(noise_np(1.0f)),  m_size_factor(DEFAULT_LEAF_SIZE) {
+Leaf::Leaf() : Leaf(noise_np(1.0f),  DEFAULT_LEAF_SIZE) {
 }
 
 Mesh Leaf::mesh(float growth_stage) const {
-    float sf = m_size_factor;
-    float gs = growth_stage;
-    if (growth_stage > 1.0f) {
-        sf += gs - 1.0f;
-        gs = 1.0f;
+    if (growth_stage <= 0.0f) {
+        return build_empty_leaf();
     }
+    sampled_leaf_t sampled_leaf = build_sampled_leaf(m_f, growth_stage, m_size_factor);
 
-    return build_leaf(m_f, gs, sf);
+
+    Mesh leaf(build_contour(sampled_leaf));
+    leaf.add(build_lamina(sampled_leaf, m_color));
+
+    return leaf;
 }

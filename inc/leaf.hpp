@@ -16,4 +16,5 @@ class Leaf {
     private:
         float m_f;
         float m_size_factor;
+        glm::vec3 m_color;
 };
