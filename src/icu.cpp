@@ -1,5 +1,4 @@
 #include "icu.hpp"
-#include <iostream>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -119,7 +118,7 @@ void gui_window() {
 
     ImGui::SliderFloat("growth time", &(global.time), 0.0f, 100.0f);
     ImGui::SliderFloat("growth rate", &(global.growth_rate), 0.0f, 2.0f);
-    ImGui::SliderFloat("spawn timing", &(global.spawn_rate), 0.0f, 2.0f);
+    ImGui::SliderFloat("spawn rate", &(global.spawn_rate), 0.0f, 2.0f);
 
     ImGui::End();
 }

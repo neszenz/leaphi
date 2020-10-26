@@ -8,7 +8,7 @@
 #include "mesh.hpp"
 #include "shader.hpp"
 
-#define N_SAMPLES 32
+#define N_SAMPLES 16
 
 typedef std::vector<glm::vec3> control_points_t;
 typedef std::vector<glm::vec3> samples_t;

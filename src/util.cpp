@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <chrono>
+#include <limits>
 #include <sstream>
 #include <thread>
 
@@ -51,4 +52,27 @@ float noise_np(float range) {
 }
 bool noise_b() {
     return (noise_p(1.0f) > 0.5f)? true : false;
+}
+
+v_buffer_t buffer_from_samples(std::vector<glm::vec3> vector, glm::vec3 color) {
+    v_buffer_t buffer;
+
+    for (const glm::vec3& vertex : vector) {
+        buffer.push_back(vertex.x);
+        buffer.push_back(vertex.y);
+        buffer.push_back(vertex.z);
+        buffer.push_back(color.r);
+        buffer.push_back(color.g);
+        buffer.push_back(color.b);
+    }
+
+    return buffer;
+}
+
+bool all_close(float a, float b) {
+    float epsilon = std::numeric_limits<float>::epsilon();
+    return a <= (b+epsilon) && a >= (b-epsilon);
+}
+bool all_close(const glm::vec3& a, const glm::vec3& b) {
+    return all_close(a.x, b.x) && all_close(a.y, b.y) && all_close(a.z, b.z);
 }

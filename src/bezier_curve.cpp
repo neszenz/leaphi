@@ -1,23 +1,11 @@
 #include "bezier_curve.hpp"
 
+#include "util.hpp"
+
 #define CURVE_COLOR glm::vec3(0.0f, 0.0f, 0.0f)
 #define CURVE_SHADER Shader("bezier_curve", "res/shaders/basic.vert", \
                                             "res/shaders/basic.frag")
 
-v_buffer_t buffer_from_samples(samples_t vector, glm::vec3 color) {
-    v_buffer_t buffer;
-
-    for (const glm::vec3& vertex : vector) {
-        buffer.push_back(vertex.x);
-        buffer.push_back(vertex.y);
-        buffer.push_back(vertex.z);
-        buffer.push_back(color.r);
-        buffer.push_back(color.g);
-        buffer.push_back(color.b);
-    }
-
-    return buffer;
-}
 e_buffer_t generate_curve_e_buffer(unsigned n_vertices) {
     e_buffer_t buffer;
 
