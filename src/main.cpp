@@ -52,13 +52,13 @@ void render(const Camera& cam, const leaf_vector_t& leafs) {
 
     glm::mat4 pv = cam.proj_matrix() * cam.view_matrix();
 
-    for (float i = 0; i < leafs.size(); ++i) {
+    for (float i = leafs.size()-1; i >= 0; --i) {
         const Leaf& leaf = leafs.at(i);
         float g = global.growth_rate * (global.time - i * global.spawn_rate);
         if (g < 0.0f) {
             continue;
         }
-        g = log(g+1);
+        g = log10(g+1);
 
         Mesh mesh = leaf.mesh(g);
         glm::mat4 m = mesh.model_matrix();
@@ -66,6 +66,10 @@ void render(const Camera& cam, const leaf_vector_t& leafs) {
         mesh.shader().uniform("u_matrix", pv*m);
 
         mesh.draw();
+        if (mesh.n_children() >= 1) {
+            mesh.child(0).shader().uniform("u_matrix", pv*m);
+            mesh.child(0).draw();
+        }
     }
 }
 

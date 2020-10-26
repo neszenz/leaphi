@@ -17,6 +17,16 @@ v_buffer_t Mesh::get_vertices() const {
     return m_geometry.get_vertices();
 }
 
+unsigned Mesh::n_children() const {
+    return m_children.size();
+}
+Mesh& Mesh::child(unsigned i) {
+    return m_children.at(i);
+}
+void Mesh::add(const Mesh& new_child) {
+    m_children.push_back(new_child);
+}
+
 void Mesh::draw() const {
     m_shader.use();
     m_geometry.draw();
