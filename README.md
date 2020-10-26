@@ -14,4 +14,8 @@
 
 ## Results
 
-...
+First results:
+![](pics/result_0.png "first results")
+
+After some tweaking:
+![](pics/result_1.png "tweaked results")
