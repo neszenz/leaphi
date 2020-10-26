@@ -22,7 +22,7 @@ struct global_t {
     bool run_animation = false;
     float time = 0.0f;
     float growth_rate = 0.5f;
-    float spawn_rate = 1.0f;
+    float spawn_rate = 0.4f;
 
     struct mouse_t {
         bool LMB_down = false;
