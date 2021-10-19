@@ -3,3 +3,4 @@ pictures/
 imgui.ini
 compile_commands.json
 .cache/*
+.vscode/*

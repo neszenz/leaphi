@@ -9,7 +9,7 @@
 #define NAME "leaphi"
 #define WIDTH 960
 #define HEIGHT 540
-#define ASPECT WIDTH / HEIGHT
+#define ASPECT double(WIDTH) / HEIGHT
 #define FOV 30.0f
 #define ORBIT_CENTER glm::vec3(0.0f, 0.0f, 0.0f)
 
